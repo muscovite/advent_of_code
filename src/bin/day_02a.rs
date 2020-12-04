@@ -18,13 +18,13 @@ fn solve(input: &str) -> usize {
             .chars()
             .next()
             .unwrap();
-        let password = captures.name("password").unwrap().as_str().chars();
-        let mut count = 0;
-        for c in password {
-            if c == rule {
-                count += 1;
-            }
-        }
+        let count = captures
+            .name("password")
+            .unwrap()
+            .as_str()
+            .chars()
+            .filter(|&c| c == rule)
+            .count();
 
         if count >= min && count <= max {
             true
