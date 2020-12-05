@@ -25,8 +25,8 @@ fn seat_id(input: &str) -> usize {
 }
 
 fn solve(input: &str) -> usize {
-    let all_ids: HashSet<usize> = (0..1024).collect();
-    let occupied: HashSet<usize> = input.trim().lines().map(|line| seat_id(line)).collect();
+    let all_ids: HashSet<_> = (0..1024).collect();
+    let occupied = input.trim().lines().map(|line| seat_id(line)).collect();
     let candidates = all_ids.difference(&occupied);
     for &candidate in candidates {
         if occupied.contains(&(candidate - 1)) && occupied.contains(&(candidate + 1)) {
