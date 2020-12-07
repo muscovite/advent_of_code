@@ -35,7 +35,7 @@ fn solve(input: &str) -> usize {
                 let color = child_capture.name("rule_type").unwrap().as_str();
                 Some(std::iter::repeat(color).take(quantity).collect::<Vec<_>>())
             })
-            .flat_map(|x| x)
+            .flatten()
             .collect();
 
         if children.len() > 0 {
