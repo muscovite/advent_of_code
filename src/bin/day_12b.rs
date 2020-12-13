@@ -26,71 +26,46 @@ impl Command {
         }
     }
 }
+
 #[derive(Debug)]
 struct State {
-    ship_x: i32,
-    ship_y: i32,
-    wx: i32,
-    wy: i32,
+    ship: (i32, i32),     // position relative to starting location
+    waypoint: (i32, i32), // positiion relative to ship
 }
 
 impl State {
-    fn new(ship_x: i32, ship_y: i32, wx: i32, wy: i32) -> State {
-        State {
-            ship_x,
-            ship_y,
-            wx,
-            wy,
-        }
+    fn new(ship: (i32, i32), waypoint: (i32, i32)) -> State {
+        State { ship, waypoint }
     }
 
     fn advance(&mut self, command: &Command) {
         match command {
-            Command::North(v) => self.wy -= v,
-            Command::South(v) => self.wy += v,
-            Command::East(v) => self.wx += v,
-            Command::West(v) => self.wx -= v,
+            Command::North(v) => self.waypoint = (self.waypoint.0, self.waypoint.1 - v),
+            Command::South(v) => self.waypoint = (self.waypoint.0, self.waypoint.1 + v),
+            Command::East(v) => self.waypoint = (self.waypoint.0 + v, self.waypoint.1),
+            Command::West(v) => self.waypoint = (self.waypoint.0 - v, self.waypoint.1),
             Command::Left(v) => {
-                let (old_x, old_y) = (self.wx, self.wy);
-                match v {
-                    270 => {
-                        self.wx = old_y * -1;
-                        self.wy = old_x;
-                    }
-                    180 => {
-                        self.wx = old_x * -1;
-                        self.wy = old_y * -1;
-                    }
-                    90 => {
-                        self.wx = old_y;
-                        self.wy = old_x * -1;
-                    }
-                    _ => panic!("left turn invalid"),
-                }
+                let (old_x, old_y) = self.waypoint;
+                self.waypoint = match v {
+                    270 => (old_y * -1, old_x),
+                    180 => (old_x * -1, old_y * -1),
+                    90 => (old_y, old_x * -1),
+                    _ => unreachable!(),
+                };
             }
             Command::Right(v) => {
-                let (old_x, old_y) = (self.wx, self.wy);
-                match v {
-                    90 => {
-                        self.wx = old_y * -1;
-                        self.wy = old_x;
-                    }
-                    180 => {
-                        self.wx = old_x * -1;
-                        self.wy = old_y * -1;
-                    }
-                    270 => {
-                        self.wx = old_y;
-                        self.wy = old_x * -1;
-                    }
-                    _ => panic!("right turn invalid"),
+                let (old_x, old_y) = self.waypoint;
+                self.waypoint = match v {
+                    90 => (old_y * -1, old_x),
+                    180 => (old_x * -1, old_y * -1),
+                    270 => (old_y, old_x * -1),
+                    _ => unreachable!(),
                 }
             }
             Command::Forward(v) => {
-                let (old_x, old_y) = (self.wx, self.wy);
                 // move towards waypoint N times
-                self.ship_x += old_x * v;
-                self.ship_y += old_y * v;
+                let (wx, wy) = self.waypoint;
+                self.ship = (self.ship.0 + (wx * v), self.ship.1 + (wy * v));
             }
         }
     }
@@ -99,13 +74,13 @@ impl State {
 fn solve(input: &str) -> i32 {
     let actions: Vec<_> = input.trim().lines().map(|l| Command::new(l)).collect();
 
-    let mut state = State::new(0, 0, 10, -1);
+    let mut state = State::new((0, 0), (10, -1));
 
     for action in actions {
         state.advance(&action);
     }
 
-    state.ship_x.abs() + state.ship_y.abs()
+    state.ship.0.abs() + state.ship.1.abs()
 }
 
 #[cfg(test)]
