@@ -1,3 +1,4 @@
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 
 fn solve(input: &str) -> usize {
@@ -24,18 +25,28 @@ fn solve(input: &str) -> usize {
             &(_, 0) => {
                 // was last seen for the first time, speak 0
                 // update count for 0
-                match seen_last.get(&0) {
-                    Some(&(recent, _)) => seen_last.insert(0, (turn, recent)),
-                    None => seen_last.insert(0, (turn, 0)),
+                match seen_last.entry(0) {
+                    Entry::Occupied(mut o) => {
+                        let &(recent, _) = o.get();
+                        o.insert((turn, recent));
+                    }
+                    Entry::Vacant(v) => {
+                        v.insert((turn, 0));
+                    }
                 };
                 last = 0;
             }
             &(recent, prev) => {
                 // seen before; speak recent - prev
                 let spoken = recent - prev;
-                match seen_last.get(&spoken) {
-                    Some(&(r, _)) => seen_last.insert(spoken, (turn, r)),
-                    None => seen_last.insert(spoken, (turn, 0)),
+                match seen_last.entry(spoken) {
+                    Entry::Occupied(mut o) => {
+                        let &(r, _) = o.get();
+                        o.insert((turn, r));
+                    }
+                    Entry::Vacant(v) => {
+                        v.insert((turn, 0));
+                    }
                 };
                 last = spoken;
             }
