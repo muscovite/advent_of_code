@@ -18,7 +18,7 @@ fn solve(input: &str) -> usize {
     }
 
     let mut turn = seeds.len();
-    while turn < 30000000 {
+    while turn < 30_000_000_usize {
         turn += 1;
 
         match seen_last.get(&last).unwrap() {
