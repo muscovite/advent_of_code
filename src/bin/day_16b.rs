@@ -71,7 +71,7 @@ fn solve(input: &str) -> usize {
     }
 
     // order possibilities from lowest to highest
-    // there should be only one set with one possibility, which can then be
+    // there should be at least one set with one possibility, which can then be
     // removed from each successive set to leave just one possibility, etc
     let mut field_pos = field_pos.iter().enumerate().collect::<Vec<(_, _)>>();
     field_pos.sort_by_key(|(_, o)| o.len());
