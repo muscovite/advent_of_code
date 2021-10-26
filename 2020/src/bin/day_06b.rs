@@ -36,4 +36,4 @@ b";
     }
 }
 
-advent_2020::read_main!();
+util::read_main!();

@@ -11,25 +11,38 @@ fn solve(input: &str) -> String {
         // ingredients
         let ingredients: HashSet<_> = parts.next().unwrap().split_whitespace().collect();
         ingredients.iter().for_each(|ingredient| {
-            ingredient_count.entry(*ingredient).and_modify(|v| *v += 1).or_insert(1);
+            ingredient_count
+                .entry(*ingredient)
+                .and_modify(|v| *v += 1)
+                .or_insert(1);
         });
 
-        // allergens 
-        let allergens = parts.next().unwrap().split_whitespace().map(|tok| &tok[..tok.len()-1]);
+        // allergens
+        let allergens = parts
+            .next()
+            .unwrap()
+            .split_whitespace()
+            .map(|tok| &tok[..tok.len() - 1]);
         allergens.for_each(|allergen| {
             // &*v -> have a &mut, so need to deref and re-ref to get just a reference for HashSet logic
-            allergen_to_ingredients.entry(allergen).and_modify(|v| {*v = &*v & &ingredients}).or_insert(ingredients.clone());
+            allergen_to_ingredients
+                .entry(allergen)
+                .and_modify(|v| *v = &*v & &ingredients)
+                .or_insert(ingredients.clone());
         });
     });
 
     let mut bad_stuff = Vec::new();
     while allergen_to_ingredients.len() > 0 {
         // find allergen with one ingredient
-        let (&allergen, bad) = allergen_to_ingredients.iter().find(|&(_, v)| v.len() == 1).unwrap();
+        let (&allergen, bad) = allergen_to_ingredients
+            .iter()
+            .find(|&(_, v)| v.len() == 1)
+            .unwrap();
         let bad = *bad.iter().nth(0).unwrap();
-        
+
         bad_stuff.push((allergen, bad));
-        
+
         // remove ingredient from rest of ingredient sets
         allergen_to_ingredients.iter_mut().for_each(|(_, v)| {
             v.remove(bad);
@@ -40,7 +53,11 @@ fn solve(input: &str) -> String {
     }
 
     bad_stuff.sort_by_key(|(allergen, _)| *allergen);
-    bad_stuff.iter().map(|(_, ingredient)| *ingredient).collect::<Vec<_>>().join(",")
+    bad_stuff
+        .iter()
+        .map(|(_, ingredient)| *ingredient)
+        .collect::<Vec<_>>()
+        .join(",")
 }
 
 #[cfg(test)]
@@ -57,4 +74,4 @@ sqjhc mxmxvkd sbzzf (contains fish)";
     }
 }
 
-advent_2020::read_main!();
+util::read_main!();

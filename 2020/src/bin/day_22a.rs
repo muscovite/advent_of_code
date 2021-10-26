@@ -66,4 +66,4 @@ Player 2:
     }
 }
 
-advent_2020::read_main!();
+util::read_main!();

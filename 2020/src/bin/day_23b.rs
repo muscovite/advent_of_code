@@ -23,7 +23,7 @@ fn run(input: &str, iterations: usize) -> String {
         let orig_val = search_val;
         // remove the three cups that are immediately clockwise of the current cup
         // XXX: SUPER GROSS
-        let (mut next1, mut next2, mut next3) = (0,0,0);
+        let (mut next1, mut next2, mut next3) = (0, 0, 0);
         for (i, cup) in cups.iter().enumerate() {
             if *cup == orig_val {
                 next1 = cups.remove(get_idx(i, 1, NUM_CUPS));
@@ -61,18 +61,15 @@ fn run(input: &str, iterations: usize) -> String {
                     .0;
                 break;
             }
-            search_val -=1;
-            let candidate = cups
-                .iter()
-                .enumerate()
-                .find(|&(_, v)| *v == search_val);
+            search_val -= 1;
+            let candidate = cups.iter().enumerate().find(|&(_, v)| *v == search_val);
             match candidate {
                 Some((idx, _)) => {
                     destination = idx;
                     break;
                 }
                 None => {
-                   continue;
+                    continue;
                 }
             }
         }
@@ -109,4 +106,4 @@ fn solve(input: &str) -> String {
     run(input, 10000000)
 }
 
-advent_2020::read_main!();
+util::read_main!();

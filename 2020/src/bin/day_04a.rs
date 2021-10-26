@@ -55,4 +55,4 @@ iyr:2011 ecl:brn hgt:59in";
     }
 }
 
-advent_2020::read_main!();
+util::read_main!();

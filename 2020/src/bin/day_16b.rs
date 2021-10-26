@@ -92,4 +92,4 @@ fn solve(input: &str) -> usize {
         .product()
 }
 
-advent_2020::read_main!();
+util::read_main!();
