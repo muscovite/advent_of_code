@@ -34,7 +34,7 @@ fn solve(input: &str) -> usize {
         })
     });
 
-    // BFS
+    // Intended to BFS, but actually DFSing
     let mut basin_sizes: Vec<_> = low_points
         .map(|(x, y)| {
             let mut visited = HashSet::new();
