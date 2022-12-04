@@ -25,15 +25,21 @@ impl FromStr for Assignments {
     type Err = ParseIntError;
 
     fn from_str(l: &str) -> Result<Self, Self::Err> {
-        let mut bounds = l
-            .split(',')
-            .flat_map(|s| s.split('-').map(|n| n.parse().unwrap()));
+        // let mut bounds = l
+        //     .split(',')
+        //     .flat_map(|s| s.split('-').map(|n| n.parse().unwrap()));
+
+        // Optimization based on knowing there are exactly 2 elements in each
+        // split
+        let (elf1, elf2) = l.split_once(',').unwrap();
+        let (lower1_str, upper1_str) = elf1.split_once('-').unwrap();
+        let (lower2_str, upper2_str) = elf2.split_once('-').unwrap();
 
         Ok(Assignments {
-            lower1: bounds.next().unwrap(),
-            upper1: bounds.next().unwrap(),
-            lower2: bounds.next().unwrap(),
-            upper2: bounds.next().unwrap(),
+            lower1: lower1_str.parse().unwrap(),
+            upper1: upper1_str.parse().unwrap(),
+            lower2: lower2_str.parse().unwrap(),
+            upper2: upper2_str.parse().unwrap(),
         })
     }
 }
