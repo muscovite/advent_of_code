@@ -1,0 +1,10 @@
+[package]
+name = "advent_2023"
+version = "0.1.0"
+authors = ["Yvonne <muscovy@duck.com>"]
+edition = "2021"
+
+[dependencies]
+util = { path = "../util" }
+lazy_static = "1.4.0"
+regex = "1.5.4"
