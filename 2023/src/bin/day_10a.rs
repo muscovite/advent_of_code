@@ -43,16 +43,16 @@ type Step = ((usize, usize), (usize, usize), usize);
 
 fn neighbors(coord: (usize, usize), prev: (usize, usize), count: usize, map: &Map) -> Vec<Step> {
     let mut neighbors: Vec<Step> = Vec::with_capacity(4);
-    let curr = &map[coord.0][coord.1];
+    let curr = &map[coord.1][coord.0];
 
     // west: neighbor must connect east
-    if let Some(col) = coord.1.checked_sub(1) {
+    if let Some(x) = coord.0.checked_sub(1) {
         match curr {
             Tile::EastWest | Tile::NorthWest | Tile::SouthWest | Tile::Start => {
-                if (coord.0, col) != prev {
-                    match map[coord.0][col] {
+                if (x, coord.1) != prev {
+                    match map[coord.1][x] {
                         Tile::EastWest | Tile::NorthEast | Tile::SouthEast | Tile::Start => {
-                            neighbors.push(((coord.0, col), coord, count + 1))
+                            neighbors.push(((x, coord.1), coord, count + 1))
                         }
                         _ => (),
                     }
@@ -63,13 +63,13 @@ fn neighbors(coord: (usize, usize), prev: (usize, usize), count: usize, map: &Ma
     }
 
     // east: neighbor must connect west
-    let col = coord.1 + 1;
-    if col < map[0].len() && (coord.0, col) != prev {
+    let x = coord.0 + 1;
+    if x < map[0].len() && (x, coord.1) != prev {
         match curr {
             Tile::EastWest | Tile::NorthEast | Tile::SouthEast | Tile::Start => {
-                match map[coord.0][col] {
+                match map[coord.1][x] {
                     Tile::EastWest | Tile::NorthWest | Tile::SouthWest | Tile::Start => {
-                        neighbors.push(((coord.0, col), coord, count + 1))
+                        neighbors.push(((x, coord.1), coord, count + 1))
                     }
                     _ => (),
                 }
@@ -79,13 +79,13 @@ fn neighbors(coord: (usize, usize), prev: (usize, usize), count: usize, map: &Ma
     }
 
     // north: neighbor must connect south
-    if let Some(row) = coord.0.checked_sub(1) {
-        if (row, coord.1) != prev {
+    if let Some(y) = coord.1.checked_sub(1) {
+        if (coord.0, y) != prev {
             match curr {
                 Tile::NorthEast | Tile::NorthSouth | Tile::NorthWest | Tile::Start => {
-                    match map[row][coord.1] {
+                    match map[y][coord.0] {
                         Tile::SouthEast | Tile::SouthWest | Tile::NorthSouth | Tile::Start => {
-                            neighbors.push(((row, coord.1), coord, count + 1))
+                            neighbors.push(((coord.0, y), coord, count + 1))
                         }
                         _ => (),
                     }
@@ -96,13 +96,13 @@ fn neighbors(coord: (usize, usize), prev: (usize, usize), count: usize, map: &Ma
     }
 
     // south: neighbor must connect north
-    let row = coord.0 + 1;
-    if row < map.len() && (row, coord.1) != prev {
+    let y = coord.1 + 1;
+    if y < map.len() && (coord.0, y) != prev {
         match curr {
             Tile::SouthEast | Tile::SouthWest | Tile::NorthSouth | Tile::Start => {
-                match map[row][coord.1] {
+                match map[y][coord.0] {
                     Tile::NorthEast | Tile::NorthWest | Tile::NorthSouth | Tile::Start => {
-                        neighbors.push(((row, coord.1), coord, count + 1))
+                        neighbors.push(((coord.0, y), coord, count + 1))
                     }
                     _ => (),
                 }
@@ -119,13 +119,13 @@ fn solve(input: &str) -> usize {
     let map: Map = input
         .lines()
         .enumerate()
-        .map(|(row, l)| {
+        .map(|(y, l)| {
             l.chars()
                 .enumerate()
-                .map(|(col, c)| {
+                .map(|(x, c)| {
                     let tile = Tile::new(c);
                     if matches!(tile, Tile::Start) {
-                        start = Some((row, col));
+                        start = Some((x, y));
                     }
                     tile
                 })
@@ -138,7 +138,7 @@ fn solve(input: &str) -> usize {
     frontier.extend(neighbors(start, start, 0, &map));
 
     while let Some((coord, prev, count)) = frontier.pop_front() {
-        if let Tile::Start = map[coord.0][coord.1] {
+        if let Tile::Start = map[coord.1][coord.0] {
             return count / 2;
         }
         frontier.extend(neighbors(coord, prev, count, &map));

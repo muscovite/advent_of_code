@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 // The pipes are arranged in a two-dimensional grid of tiles:
 // | is a vertical pipe connecting north and south.
 // - is a horizontal pipe connecting east and west.
@@ -43,16 +43,16 @@ type Step = ((usize, usize), (usize, usize), usize);
 
 fn neighbors(coord: (usize, usize), prev: (usize, usize), count: usize, map: &Map) -> Vec<Step> {
     let mut neighbors: Vec<Step> = Vec::with_capacity(4);
-    let curr = &map[coord.0][coord.1];
+    let curr = &map[coord.1][coord.0];
 
     // west: neighbor must connect east
-    if let Some(col) = coord.1.checked_sub(1) {
+    if let Some(x) = coord.0.checked_sub(1) {
         match curr {
             Tile::EastWest | Tile::NorthWest | Tile::SouthWest | Tile::Start => {
-                if (coord.0, col) != prev {
-                    match map[coord.0][col] {
+                if (x, coord.1) != prev {
+                    match map[coord.1][x] {
                         Tile::EastWest | Tile::NorthEast | Tile::SouthEast | Tile::Start => {
-                            neighbors.push(((coord.0, col), coord, count + 1))
+                            neighbors.push(((x, coord.1), coord, count + 1))
                         }
                         _ => (),
                     }
@@ -63,13 +63,13 @@ fn neighbors(coord: (usize, usize), prev: (usize, usize), count: usize, map: &Ma
     }
 
     // east: neighbor must connect west
-    let col = coord.1 + 1;
-    if col < map[0].len() && (coord.0, col) != prev {
+    let x = coord.0 + 1;
+    if x < map[0].len() && (x, coord.1) != prev {
         match curr {
             Tile::EastWest | Tile::NorthEast | Tile::SouthEast | Tile::Start => {
-                match map[coord.0][col] {
+                match map[coord.1][x] {
                     Tile::EastWest | Tile::NorthWest | Tile::SouthWest | Tile::Start => {
-                        neighbors.push(((coord.0, col), coord, count + 1))
+                        neighbors.push(((x, coord.1), coord, count + 1))
                     }
                     _ => (),
                 }
@@ -79,13 +79,13 @@ fn neighbors(coord: (usize, usize), prev: (usize, usize), count: usize, map: &Ma
     }
 
     // north: neighbor must connect south
-    if let Some(row) = coord.0.checked_sub(1) {
-        if (row, coord.1) != prev {
+    if let Some(y) = coord.1.checked_sub(1) {
+        if (coord.0, y) != prev {
             match curr {
                 Tile::NorthEast | Tile::NorthSouth | Tile::NorthWest | Tile::Start => {
-                    match map[row][coord.1] {
+                    match map[y][coord.0] {
                         Tile::SouthEast | Tile::SouthWest | Tile::NorthSouth | Tile::Start => {
-                            neighbors.push(((row, coord.1), coord, count + 1))
+                            neighbors.push(((coord.0, y), coord, count + 1))
                         }
                         _ => (),
                     }
@@ -96,13 +96,13 @@ fn neighbors(coord: (usize, usize), prev: (usize, usize), count: usize, map: &Ma
     }
 
     // south: neighbor must connect north
-    let row = coord.0 + 1;
-    if row < map.len() && (row, coord.1) != prev {
+    let y = coord.1 + 1;
+    if y < map.len() && (coord.0, y) != prev {
         match curr {
             Tile::SouthEast | Tile::SouthWest | Tile::NorthSouth | Tile::Start => {
-                match map[row][coord.1] {
+                match map[y][coord.0] {
                     Tile::NorthEast | Tile::NorthWest | Tile::NorthSouth | Tile::Start => {
-                        neighbors.push(((row, coord.1), coord, count + 1))
+                        neighbors.push(((coord.0, y), coord, count + 1))
                     }
                     _ => (),
                 }
@@ -117,21 +117,21 @@ fn neighbors(coord: (usize, usize), prev: (usize, usize), count: usize, map: &Ma
 // General solution
 // - Find pipe tiles
 // - Find x/y boundaries
-// - Find all chunks using flood fill (fill up to x/y boundary or pipe tile)
+// - Find all chunks using flood fill (fill up to x/y boundary or pipe tile) ???
 // - Pick a direction and count how many pipe tiles you cross (inc if pipe is at edge of map)
 
 fn solve(input: &str) -> usize {
     let mut start: Option<(usize, usize)> = None;
-    let map: Map = input
+    let mut map: Map = input
         .lines()
         .enumerate()
-        .map(|(row, l)| {
+        .map(|(y, l)| {
             l.chars()
                 .enumerate()
-                .map(|(col, c)| {
+                .map(|(x, c)| {
                     let tile = Tile::new(c);
                     if matches!(tile, Tile::Start) {
-                        start = Some((row, col));
+                        start = Some((x, y));
                     }
                     tile
                 })
@@ -143,14 +143,100 @@ fn solve(input: &str) -> usize {
     let mut frontier: VecDeque<Step> = VecDeque::new();
     frontier.extend(neighbors(start, start, 0, &map));
 
+    let mut path: HashSet<(usize, usize)> = HashSet::new();
+
     while let Some((coord, prev, count)) = frontier.pop_front() {
-        if let Tile::Start = map[coord.0][coord.1] {
-            return count / 2;
+        path.insert(coord);
+        if let Tile::Start = map[coord.1][coord.0] {
+            break;
         }
-        frontier.extend(neighbors(coord, prev, count, &map));
+        let n = neighbors(coord, prev, count, &map);
+        frontier.extend(n.iter());
     }
 
-    panic!("should not reach")
+    // Replace start tile with actual shape
+    let left = match start.0.checked_sub(1) {
+        Some(x) => Some(&map[start.1][x]),
+        _ => None,
+    };
+    let right = if start.0 + 1 < map[0].len() {
+        Some(&map[start.1][start.0 + 1])
+    } else {
+        None
+    };
+    let up = match start.1.checked_sub(1) {
+        Some(y) => Some(&map[y][start.0]),
+        _ => None,
+    };
+    let down = if start.0 + 1 < map[0].len() {
+        Some(&map[start.1 + 1][start.0])
+    } else {
+        None
+    };
+
+    let start_tile = match (up, down, left, right) {
+        (
+            _,
+            _,
+            Some(Tile::EastWest | Tile::NorthEast | Tile::SouthEast),
+            Some(Tile::EastWest | Tile::NorthWest | Tile::SouthWest),
+        ) => Tile::EastWest,
+        (
+            _,
+            Some(Tile::NorthEast | Tile::NorthSouth | Tile::NorthWest),
+            _,
+            Some(Tile::EastWest | Tile::NorthWest | Tile::SouthWest),
+        ) => Tile::SouthEast,
+        (
+            _,
+            Some(Tile::NorthEast | Tile::NorthSouth | Tile::NorthWest),
+            Some(Tile::EastWest | Tile::NorthEast | Tile::SouthEast),
+            _,
+        ) => Tile::SouthWest,
+        (
+            Some(Tile::SouthEast | Tile::SouthWest | Tile::NorthSouth),
+            _,
+            _,
+            Some(Tile::EastWest | Tile::NorthWest | Tile::SouthWest),
+        ) => Tile::NorthEast,
+        (
+            Some(Tile::SouthEast | Tile::SouthWest | Tile::NorthSouth),
+            _,
+            Some(Tile::EastWest | Tile::NorthEast | Tile::SouthEast),
+            _,
+        ) => Tile::NorthWest,
+        (
+            Some(Tile::SouthEast | Tile::SouthWest | Tile::NorthSouth),
+            Some(Tile::NorthEast | Tile::NorthSouth | Tile::NorthWest),
+            _,
+            _,
+        ) => Tile::NorthSouth,
+        _ => unreachable!(),
+    };
+    map[start.1][start.0] = start_tile;
+
+    let width = map[0].len();
+    let height = map.len();
+
+    (0..height)
+        .flat_map(|y| (0..width).map(move |x| (x, y)))
+        .filter(|(x, y)| {
+            if path.contains(&(*x, *y)) {
+                return false;
+            }
+            (*x + 1..width)
+                .filter(|curr_x| match map[*y][*curr_x] {
+                    // Tile::Start only works if it happens to be the right kind of tile (:
+                    Tile::NorthSouth | Tile::NorthEast | Tile::NorthWest => {
+                        path.contains(&(*curr_x, *y))
+                    }
+                    _ => false,
+                })
+                .count()
+                % 2
+                == 1
+        })
+        .count()
 }
 
 #[cfg(test)]
