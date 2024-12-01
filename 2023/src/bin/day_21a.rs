@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, VecDeque};
 
 #[cfg(not(test))]
 const TARGET_STEPS: usize = 64;
@@ -53,17 +53,20 @@ fn solve(input: &str) -> usize {
 
     let start = start.unwrap();
 
-    let mut frontier: Vec<(_, usize)> = vec![(start, 0)];
-    let mut reached: HashSet<(usize, usize)> = HashSet::new();
-    while let Some((coord, steps)) = frontier.pop() {
+    let mut frontier: VecDeque<(_, usize)> = VecDeque::from_iter([(start, 0)]);
+    let mut seen: HashMap<(usize, usize), usize> = HashMap::new();
+    while let Some((coord, steps)) = frontier.pop_front() {
         if steps == TARGET_STEPS {
-            reached.insert(coord);
             continue;
         }
         let next = neighbors(coord, &map);
-        frontier.extend(next.iter().map(|coord| (*coord, steps + 1)))
+        for n in next {
+            if seen.insert(n, steps + 1).is_none() {
+                frontier.push_back((n, steps + 1))
+            }
+        }
     }
-    reached.len()
+    seen.into_iter().filter(|(_, steps)| steps % 2 == 0).count()
 }
 
 #[cfg(test)]
