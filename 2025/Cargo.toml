@@ -1,0 +1,10 @@
+[package]
+name = "advent_2025"
+version = "0.1.0"
+authors = ["Yvonne <muscovy@duck.com>"]
+edition = "2024"
+
+[dependencies]
+util = { path = "../util" }
+regex = "1.12.2"
+itertools = "0.14.0"
