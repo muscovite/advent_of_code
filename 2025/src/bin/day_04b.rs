@@ -41,10 +41,10 @@ fn solve(input: &str) -> usize {
 
     let mut rolls = 0;
     loop {
-        let new_grid: HashSet<_, _> = grid
-            .clone()
-            .into_iter()
-            .filter(|&coord| !accessible(&grid, coord))
+        let new_grid: HashSet<(isize, isize)> = grid
+            .iter()
+            .filter(|&coord| !accessible(&grid, *coord))
+            .copied()
             .collect();
 
         if new_grid.len() == grid.len() {
