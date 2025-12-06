@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::collections::HashSet;
 
-fn accessible(grid: &HashMap<(isize, isize), char>, coord: (isize, isize)) -> bool {
+fn accessible(grid: &HashSet<(isize, isize)>, coord: (isize, isize)) -> bool {
     [
         // up
         (coord.0, coord.1 - 1),
@@ -20,29 +20,31 @@ fn accessible(grid: &HashMap<(isize, isize), char>, coord: (isize, isize)) -> bo
         (coord.0 + 1, coord.1 + 1),
     ]
     .into_iter()
-    .filter(|pos| grid.get(pos).is_some())
+    .filter(|pos| grid.contains(pos))
     .count()
         < 4
 }
 
 fn solve(input: &str) -> usize {
-    let mut grid: HashMap<(isize, isize), char> = input
+    let mut grid: HashSet<(isize, isize)> = input
         .lines()
         .enumerate()
         .flat_map(|(y, l)| {
-            l.chars()
-                .enumerate()
-                .map(move |(x, c)| ((x as isize, y as isize), c))
+            l.chars().enumerate().flat_map(move |(x, c)| {
+                if c != '@' {
+                    return None;
+                }
+                Some((x as isize, y as isize))
+            })
         })
-        .filter(|(_, c)| *c == '@')
         .collect();
 
     let mut rolls = 0;
     loop {
-        let new_grid: HashMap<_, _> = grid
+        let new_grid: HashSet<_, _> = grid
             .clone()
             .into_iter()
-            .filter(|&(coord, _)| !accessible(&grid, coord))
+            .filter(|&coord| !accessible(&grid, coord))
             .collect();
 
         if new_grid.len() == grid.len() {
