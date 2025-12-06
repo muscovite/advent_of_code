@@ -1,21 +1,22 @@
 fn solve(input: &str) -> usize {
     let num_lines = input.trim().lines().count();
-    let input_iter = input.trim().lines();
-    let operators = input_iter.clone().rev().next().unwrap().split_whitespace();
-    let mut numbers: Vec<_> = input_iter.take(num_lines - 1).map(|l| l.chars()).collect();
+    let mut rev_iter = input.trim().lines().rev();
+    let operators = rev_iter.next().unwrap().split_whitespace();
+    let mut numbers: Vec<_> = rev_iter
+        .rev()
+        .take(num_lines - 1)
+        .map(|l| l.chars())
+        .collect();
 
     operators
         .map(|op| {
             let mut subtotal = 0;
             loop {
-                // XXX: is there a way to do this without collect()?
-                // is there a way to do this without the loop?
                 let next_chars: Vec<_> = numbers
                     .iter_mut()
                     .flat_map(|iter| match iter.next() {
-                        Some(' ') => None,
+                        Some(' ') | None => None,
                         Some(c) => Some(c),
-                        None => None,
                     })
                     .collect();
 
